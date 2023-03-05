@@ -20,7 +20,7 @@
 
 % Typography.
 \RequirePackage{geometry}
-\RequirePackage[draft=false]{scrlayer-scrpage}
+\RequirePackage[draft=false,automark,autooneside=false]{scrlayer-scrpage}
 \RequirePackage{helvet}
 \renewcommand*{\familydefault}{\sfdefault}
 \RequirePackage[dvipsnames]{xcolor}
@@ -127,10 +127,11 @@
 \clearpairofpagestyles
 \setlength{\headheight}{1.5cm}
 \setlength{\footheight}{1.5cm}
-\lohead[\thetitle]{\thetitle}
+\lohead[]{\leftmark}
 \cohead[\partname]{\partname}
-\rohead[]{\thesection~\headmark}
+\rohead[]{\rightmark}
 \lofoot[\ISOToday]{\ISOToday}
+\cofoot[\thetitle]{\thetitle}
 \rofoot[Page \pagemark{} of \pageref*{LastPage}]{Page \pagemark{} of \pageref*{LastPage}}
 \pagestyle{scrheadings}
 

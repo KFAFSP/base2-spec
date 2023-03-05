@@ -1,0 +1,215 @@
+\section{Goals}
+
+% Summary.
+\basetwo is an \MLIR-friendly abstraction of native binary number formats.
+It is a \gls{ssa} \gls{ir} that models arithmetic expressions on binary numbers.
+
+\subsection{Native Type and Operation Support}
+
+\begin{itemize}
+    \item[\Goal{goal:native_type}] Native number formats of a wide range of compute targets shall be representable.
+
+    \begin{highlight}{}
+        \basetwo is intended to be the interface layer between a target-agnostic front-end and a target-aware back-end.
+        It must support at least all number types known to \LLVMIR.
+    \end{highlight}
+
+    \item[\Goal{goal:native_ops}] Common natively supported instructions shall have directly equivalent mappings.
+
+    \begin{highlight}{}
+        A target-aware manipulator must be able to perform code selection on the abstraction level of \basetwo.
+        A subset with a well-defined lowering to \LLVMIR must exist.
+    \end{highlight}
+
+    \item[\Goal{goal:reduced}] \term{Number types}[type!number] shall support a common, reduced instruction set.
+
+    \begin{highlight}{}
+        A target-agnostic front-end must be able to express computations without knowledge of the target architecture.
+        Implementations must ensure a minimal feature set is supported either natively or through emulation.
+    \end{highlight}
+
+    \item[\Goal{goal:param_types}] \term{Types}[type] shall be parametric to provide first-class support for reconfigurable compute.
+
+    \begin{highlight}{}
+        Reconfigurable targets may use arbitrary precision number formats, which are generally not representable in \LLVMIR or \arith.
+    \end{highlight}
+\end{itemize}
+
+\subsection{Strong Type Semantics}
+
+\begin{enumerate}
+    \item[\Goal{goal:interpretation}] \term{Number types}[type!number] shall have unambiguous \term{interpretations}[interpretation].
+
+    \begin{highlight}{}
+        \LLVMIR, and \arith by extension, do not define an interpretation for integer instances.
+        Instead, they associate the required information with the instructions.
+        This precludes type-independent operational semantics.
+    \end{highlight}
+
+    \item[\Goal{goal:bits}] \term{Type instances}[instance] shall be represented by \term{bit sequences}[bit sequence].
+
+    \begin{highlight}{}
+        This limits the scope of \basetwo to the most common data organization scheme and traditional technologies.
+    \end{highlight}
+
+    \item[\Goal{goal:untyped_ops}] \term{Operations}[operation] shall be defined using type-independent semantics.
+
+    \begin{highlight}{}
+        To enable truly portable and reusable parametric types for target-agnostic compilers, operational semantics must be concise and independent of the involved types.
+        \LLVMIR and \arith do not provide this (cf. \cref{goal:interpretation}).
+    \end{highlight}
+\end{enumerate}
+
+\subsection{Canonical \glsentrytext{ub}}
+
+\begin{enumerate}
+    \item[\Goal{goal:ub}] \term{Operations}[operation] shall have clearly delimited \gls{ub}.
+
+    \begin{highlight}{}
+        Some scenarios require compiler exploitation of \gls{ub} to achieve good performance.
+        \Glspl{ir} such as \arith do not clearly define these boundaries (yet), preventing such aggressive optimizations.
+    \end{highlight}
+
+    \item[\Goal{goal:rounding}] \term{Operations}[operation] shall follow well-defined \term{rounding} guarantees.
+
+    \begin{highlight}{}
+        The behavior of \basetwo \term{programs}[program] must be reproducible across different implementations within deterministic accuracy bounds.
+        Target-agnostic front-ends need guarantees independent of the target lowering.
+    \end{highlight}
+
+    \item[\Goal{goal:impldef}] \term{Operations}[operation] shall accommodate clearly separated \impldef behavior.
+
+    \begin{highlight}{}
+        An \gls{ir} that does not account for \impldef behavior is unsuitable for code selection.
+        Since \basetwo is intended to be closed, extensibility must be facilitated through \impldef customization points.
+    \end{highlight}
+\end{enumerate}
+
+\section{Non-Goals}
+
+% Summary.
+\basetwo is designed to be a lightweight abstraction.
+This section highlights the three categories of goals that are explicitly excluded from \basetwo's design.
+
+\subsection{Algebraic Optimization}
+\label{goal:algebra}
+
+% No number theory.
+\basetwo does not include reasoning about number-theoretical aspects, including group theory.
+The operational semantics defined in this document only require a minimal set of requirements to be followed by the implementation.
+
+\begin{highlight}{}
+    Algebraic optimizations should be accommodated on higher abstraction levels.
+\end{highlight}
+
+\subsection{Arbitrary Encodings}
+\label{goal:bit_encoding}
+
+% Binary encodings.
+\basetwo is not designed to reason about arbitrary binary encodings of numbers.
+It specifically targets regular encodings which meaningfully support the \term{operations}[operation] defined in this document.
+In particular, \basetwo only deals with binary \term{fixed-point}[number!binary fixed-point] and \term{floating-point numbers}[number!binary floating-point].
+
+\begin{highlight}{}
+    This separation from architectural details leaves the freedoms required for targeting different devices.
+    Any implementation that preserves the binary radix and implements the canonical behavior (natively or emulated) can be conformant.
+\end{highlight}
+
+\subsection{Quantization}
+\label{goal:quantization}
+
+% Incompatibility with base2.
+\basetwo is not designed to represent or reason about \term{quantization functions}[quantization function].
+The type system of \basetwo does not allow carrying the parametrization of these functions.
+
+\begin{highlight}{}
+    \basetwo assists in \term{quantization} by providing the implementation of the native \term{type}, i.e., the \newterm{storage type} for the quantized number.
+    In \MLIR, \basetwo \term{types}[type] are intended to be usable as a basis for truly quantized types.
+\end{highlight}
+
+\section{Assumptions}
+
+% Summary.
+The design of \basetwo makes some assumptions about typical uses and targets that limit its applicability.
+These assumptions are based on observations made on current trends in hardware and programming language design.
+
+% List of assumptions.
+\begin{itemize}
+    \item[\Assume{asm:ints}] Integers are the most fundamental native types.
+
+    \begin{highlight}{Integer Dominance}
+        % Integers are the lowest level of abstraction.
+        \Cref{asm:ints} establishes an abstraction hierarchy of types in \basetwo, placing integer \term{operations}[operation] at the most specific level.
+        This further implies that all \term{operations}[operation] are reducible to integer \term{operations}[operation].
+    \end{highlight}
+
+    \item[\Assume{asm:base2}] Binary number representations are the most common.
+
+    \begin{highlight}{Binary Dominance}
+        % Bits and two's complement rule the computing world.
+        \Cref{asm:base2} limits the scope of the \basetwo abstraction to numerals with radix \(2\).
+        This is the prevailing method of representing numbers in electronic compute platforms.
+        Deviating targets are excluded.
+    \end{highlight}
+
+    \item[\Assume{asm:twos_compl}] \term{Two's complement}[two's complement] is the one true representation for signed binary integers.
+
+    \begin{highlight}{Two's Complement Dominance}
+        % Dominance of two's complement.
+        \Cref{asm:twos_compl} requires that \term{signed integers}[integer!signed] are represented using the \term{two's complement}.
+        This is the prevailing method of representing negative integers in binary format.
+        Deviating targets are excluded.
+    \end{highlight}
+
+    \item[\Assume{asm:fixed_float}] Computations are either \term{fixed-point}[number!binary fixed-point] or \term{floating-point}[number!binary floating-point].
+
+    \begin{highlight}{Fixed-point and Floating-point Dominance}
+        % Fixed- and floating-point limitations.
+        \Cref{asm:fixed_float} establishes a simple classification of numbers.
+        All numbers in \basetwo are \term{binary rational numbers}[number!binary rational].
+        Non-rational values are allowed in some cases.
+        Interval arithmetic and exponents of bases other than \(2\) are excluded.
+    \end{highlight}
+\end{itemize}
+
+\section{Requirements}
+
+The concept of a \term{number type}[type!number] in \basetwo is constrained by the following requirements
+
+% List of requirements.
+\begin{itemize}
+    \item[\Require{req:bits}] \term{Instances}[instance] of \term{number types}[type!number] must be \term{bit sequences}[bit sequence] of a type-specific, fixed length.
+
+    \begin{highlight}{}
+        All \term{number types}[type!number] in \basetwo are finite.
+        No formats with sub-bit storage granularity are allowed.
+        Variable length encodings are prohibited.
+    \end{highlight}
+
+    \item[\Require{req:interpretation}] \term{Instances}[instance] of \term{number types}[type!number] must have an unambiguous \term{interpretation}.
+
+    \begin{highlight}{}
+        Any typed \term{bit sequence} must have an unambiguous \term{interpretation}.
+        The binary encoding must be fixed, and no contextual deviations are allowed.
+    \end{highlight}
+
+    \item[\Require{req:representation}] \term{Number types}[type!number] must provide a \term{representation} for the rational numbers.
+
+    \begin{highlight}{}
+        All \term{number types}[type!number] in \basetwo model \Rat{}.
+        The \term{type} fully determines this mapping, which is based on a known accuracy guarantee.
+    \end{highlight}
+
+    \item[\Require{req:ordering}] \term{Instances}[instance] of \term{number types}[type!number] must have a consistent \term{partial ordering}[partial order].
+
+    \begin{highlight}{}
+        All objects represented by \term{number types}[type!number], including non-rational ones, must be ordered or unordered.
+        This ordering must hold under \term{interpretation}.
+    \end{highlight}
+
+    \item[\Require{req:closed_arithmetic}] \term{Number types}[type!number] must implement add, subtract, multiply, divide and remainder.
+
+    \begin{highlight}{}
+        These closed arithmetic operators are the reduced instruction set, from which we derive all other semantics.
+    \end{highlight}
+\end{itemize}
