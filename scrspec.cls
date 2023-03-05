@@ -84,7 +84,7 @@
 \colorlet{highlight}{Periwinkle}
 \colorlet{definition}{MidnightBlue}
 
-% Heading color.
+% Heading format.
 \setkomafont{disposition}{\normalfont\color{heading}}
 \setkomafont{partentry}{\scshape\bfseries\color{heading}}
 \setkomafont{chapterentry}{\bfseries\color{heading}}
@@ -99,13 +99,14 @@
 ]{subsection,subsubsection}
 \setkomafont{pagehead}{\upshape}
 \setkomafont{pagefoot}{\upshape}
-
-% Heading indentation.
-\renewcommand*{\chapterformat}{%
-    \IfUsePrefixLine{\chapapp\nobreakspace\thechapter\autodot}{%
-        \makebox[1.5cm][l]{\thechapter\autodot\hfil}%
+\renewcommand*{\chapterlinesformat}[3]{%
+    \parbox{\linewidth}{%
+        \raggedleft\@hangfrom{#2}{#3}%
+        \par\kern-.75\ht\strutbox\rule{\linewidth}{1.5pt}
     }%
 }
+
+% Heading indentation.
 \renewcommand*{\sectionformat}{\makebox[1.5cm][l]{\thesection\autodot\hfil}}
 \renewcommand*{\subsectionformat}{\makebox[1.5cm][l]{\thesubsection\autodot\hfil}}
 \renewcommand*{\subsubsectionformat}{\makebox[1.5cm][l]{\thesubsubsection\autodot\hfil}}
@@ -132,9 +133,9 @@
 \clearpairofpagestyles
 \setlength{\headheight}{1.5cm}
 \setlength{\footheight}{1.5cm}
-\lohead[]{\leftmark}
+\lohead[]{\rightmark}
 \cohead[\partname]{\partname}
-\rohead[]{\rightmark}
+\rohead[]{\leftmark}
 \lofoot[\ISOToday]{\ISOToday}
 \cofoot[\thetitle]{\thetitle}
 \rofoot[Page \pagemark{} of \pageref*{LastPage}]{Page \pagemark{} of \pageref*{LastPage}}
