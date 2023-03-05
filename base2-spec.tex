@@ -1,0 +1,78 @@
+\documentclass[draft]{scrspec}
+
+% Additional document macros.
+\input{content/macros}
+
+% Make and populate glossaries.
+\newglossary[nlg]{notation}{not}{ntn}{Notation}
+\loadglsentries[acronym]{content/acronyms}
+\loadglsentries[notation]{content/notation}
+\makeglossaries
+
+\begin{document}
+
+\title{\basetwo Specification}
+\subtitle{Working Draft\\Version 0.5}
+
+\author{
+    Karl F. A. Friebel \\
+    Technische Universität Dresden \\
+    \texttt{karl.friebel@tu-dresden.de} \\
+    \\
+    Jiahong Bi \\
+    Technische Universität Dresden \\
+    \texttt{jiahong.bi@mailbox.tu-dresden.de} \\
+    \vspace{20em}
+}
+
+\maketitle
+
+% Revision History.
+\begin{versionhistory}
+    \vhEntry{0.1}{2023-01-20}{KF|JB}{created from markdown}
+    \vhEntry{0.2}{2023-02-01}{KF}{fix errata in rounding definition}
+    \vhEntry{0.3}{2023-03-01}{KF}{add type hierarchy and background}
+    \vhEntry{0.4}{2023-03-02}{KF|JB}{release candidate 1}
+    \vhEntry{0.5}{2023-03-05}{KF}{release candidate 2}
+\end{versionhistory}
+
+% TOC.
+\newpage
+\pdfbookmark[0]{\contentsname}{toc}
+\tableofcontents
+
+%
+% Introduction and Overview
+%
+
+\part{Part 1: Introduction and Overview}
+
+% Information about the document, acronyms, notation and references.
+\chapter{About this Document}
+\input{content/intro/about}
+
+% Background on existing technologies and conventions.
+\chapter{Background}
+%\input{content/intro/background}
+
+% Design rationale of the base2 project.
+\chapter{Design Rationale}
+%\input{content/intro/design}
+
+%
+% Specification
+%
+
+\part{Part 2: Specification}
+
+% TODO.
+
+%
+% MLIR Reference Implementation
+%
+
+\part{Part 3: \glsentrytext{mlir} Reference Implementation}
+
+% TODO.
+
+\end{document}

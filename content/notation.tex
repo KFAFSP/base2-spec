@@ -1,0 +1,171 @@
+%
+% Common symbols
+%
+
+% Natural numbers.
+\newglossaryentry{sym:nat}{
+    name={\ensuremath{\mathbb{N}}},
+    description={Set of all non-negative integers, including \(0\).},
+    sort={a nat}
+}
+\newcommand*{\Nat}{\gls{sym:nat}}
+
+% Integers.
+\newglossaryentry{sym:int}{
+    name={\ensuremath{\mathbb{Z}}},
+    description={Set of all integers.},
+    sort={a int}
+}
+\newcommand*{\Int}{\gls{sym:int}}
+
+% Rational numbers.
+\newglossaryentry{sym:rat}{
+    name={\ensuremath{\mathbb{Q}}},
+    description={Set of all rational numbers.},
+    sort={a rat}
+}
+\newcommand*{\Rat}{\gls{sym:rat}}
+
+%
+% Base2 symbols
+%
+
+% Type.
+\NewDocumentCommand{\Type}{O{T}}{\texttt{#1}}
+% Value.
+\NewDocumentCommand{\Value}{O{T}O{\MakeLowercase{#1}}}{\ensuremath{#2 : #1}}
+% Operation.
+\NewDocumentCommand{\Op}{O{op}}{\texttt{#1}}
+
+% Poison value.
+\newglossaryentry{sym:poison}{
+    name={\ensuremath{\dagger}},
+    description={Reserved symbol that represents the result of undefined behavior.},
+    sort={c poison}
+}
+\newcommand*{\Poison}{\gls{sym:poison}}
+
+% Bit universe.
+\newglossaryentry{sym:buniv}{
+    name={\ensuremath{\mathcal{B}}},
+    description={Set of all bit sequences of a given length.},
+    sort={b bit universe}
+}
+\newcommand*{\Buniv}{\gls{sym:buniv}}
+
+% Bit universe.
+\newglossaryentry{sym:bwidth}{
+    name={\ensuremath{\omega}},
+    description={Length of a bit sequence or bit sequence type.},
+    sort={b bit width}
+}
+\newcommand*{\Bwidth}{\gls{sym:bwidth}}
+\NewDocumentCommand{\BwidthT}{O{T}}{\ensuremath{\Bwidth_{\Type[#1]}}}
+
+% Bit universe.
+\newglossaryentry{sym:sbit}{
+    name={\ensuremath{b_1}},
+    description={Most significant bit, or sign bit.},
+    sort={b sign bit}
+}
+\newcommand*{\Sbit}{\gls{sym:sbit}}
+
+% Intepretation function.
+\newglossaryentry{sym:interp}{
+    name={\ensuremath{\Gamma}},
+    description={Function that maps an instance of a type to a point.},
+    sort={c interpret}
+}
+\newcommand*{\Interp}{\gls{sym:interp}}
+\NewDocumentCommand{\InterpT}{O{T}}{\ensuremath{\Interp_{\Type[#1]}}}
+
+% Intepretation function.
+\newglossaryentry{sym:points}{
+    name={\ensuremath{\Lambda}},
+    description={Set of points represented by instances of a type.},
+    sort={c points}
+}
+\newcommand*{\Points}{\gls{sym:points}}
+\NewDocumentCommand{\PointsT}{O{T}}{\ensuremath{\Points_{\Type[#1]}}}
+
+% Extended points.
+\newglossaryentry{sym:ext}{
+    name={\ensuremath{\mathcal{X}}},
+    description={Set of \impldef points of a type.},
+    sort={c points extended}
+}
+\newcommand*{\Ext}{\gls{sym:ext}}
+\NewDocumentCommand{\ExtT}{O{T}}{\ensuremath{\Ext_{\Type[#1]}}}
+
+% Rounding function.
+\newglossaryentry{sym:round}{
+    name={\ensuremath{\Omega}},
+    description={Function that performs rounding.},
+    sort={d round}
+}
+\newcommand*{\Round}{\gls{sym:round}}
+\NewDocumentCommand{\RoundR}{O{R}}{\ensuremath{\underset{#1}{\Round}}}
+\NewDocumentCommand{\RoundTR}{O{T}O{R}}{\ensuremath{\underset{#2}{\Round_{\Type[#1]}}}}
+
+% Rounding modes.
+\newglossaryentry{sym:exact}{
+    name={\ensuremath{=x}},
+    description={Any inexact result is undefined.},
+    sort={d round exact}
+}
+\newcommand*{\Exact}{\gls{sym:exact}}
+\newglossaryentry{sym:nearest}{
+    name={\ensuremath{\min\Delta}},
+    description={Round to the value that minimizes the absolute difference.},
+    sort={d round nearest}
+}
+\newcommand*{\Nearest}{\gls{sym:nearest}}
+\newglossaryentry{sym:up}{
+    name={\ensuremath{\nless x}},
+    description={Round to the smallest value not less than the exact value.},
+    sort={d round up}
+}
+\newcommand*{\Up}{\gls{sym:up}}
+\newglossaryentry{sym:down}{
+    name={\ensuremath{\ngtr x}},
+    description={Round to the largest value not greater than the exact value.},
+    sort={d round down}
+}
+\newcommand*{\Down}{\gls{sym:down}}
+\newglossaryentry{sym:from_zero}{
+    name={\ensuremath{\nless \lvert x \rvert}},
+    description={Round to the value with the same sign closest to zero that is not closer to zero than the exact value.},
+    sort={d round away from zero}
+}
+\newcommand*{\FromZero}{\gls{sym:from_zero}}
+\newglossaryentry{sym:to_zero}{
+    name={\ensuremath{\ngtr \lvert x \rvert}},
+    description={Round to the value with the same sign furthest away from zero that is not farther away than the exact value.},
+    sort={d round towards zero}
+}
+\newcommand*{\ToZero}{\gls{sym:to_zero}}
+\newglossaryentry{sym:converge}{
+    name={\ensuremath{x \pm 0}},
+    description={Round such that the rounding bias is eliminated over a sequence of random samples.},
+    sort={d round converge}
+}
+\newcommand*{\Converge}{\gls{sym:converge}}
+
+% Division operator.
+\newglossaryentry{op:idiv}{
+    name={\ensuremath{\div}},
+    description={Integer division operator.},
+    sort={a integer division}
+}
+\newcommand*{\IDiv}{\gls{op:idiv}}
+\NewDocumentCommand{\IDivR}{O{R}}{\ensuremath{\underset{#1}{\IDiv}}}
+
+% Remainder operator.
+\newcommand*{\Pct}{\mathbin{\%}}
+\newglossaryentry{op:rem}{
+    name={\ensuremath{\Pct}},
+    description={Remainder operator.},
+    sort={a integer remainder}
+}
+\newcommand*{\Rem}{\gls{op:rem}}
+\NewDocumentCommand{\RemR}{O{R}}{\ensuremath{\underset{#1}{\Rem}}}

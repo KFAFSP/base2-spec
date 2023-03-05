@@ -1,0 +1,49 @@
+\section{Scope of this Document}
+
+% Document summary.
+This document is the specification for the \basetwo \gls{ir}.
+It defines the concepts, the type system and the operational semantics of the \basetwo \gls{ir}.
+Additionally, it documents the \basetwo reference implementation based on the \MLIR framework.
+
+% IR summary.
+\basetwo is an \gls{ir} that introduces a common level of abstraction for operations on binary number types.
+It focuses on reducing these programs to integer computations for targeting various devices.
+\basetwo establishes a common baseline among \glspl{isa} of such devices, and provides a foundation for mapping them to reconfigurable compute targets.
+It only reasons about binary fixed-point and floating-point numbers.
+
+% Implementation summary.
+The \MLIR implementation of \basetwo is the reference implementation of this standard.
+It implements the \texttt{base2} dialect, which consists of types, attributes and operations that model the elements described in this specification.
+The \texttt{base2} dialect also implements rewrites within the dialect itself, and translations to other targets, such as \LLVMIR.
+
+% Author summary.
+\basetwo was created at the \href{https://cfaed.tu-dresden.de/ccc-about}{Chair for Compiler Construction} at \gls{tud}.
+It is released under the ISC license.
+
+\begin{remark}{Note}
+    This document is a working draft, and is subject to change.
+    When proposing changes to the contents, please check that you are basing them on the newest available version.
+\end{remark}
+
+\section{Document Structure}
+
+% Document outline.
+This document is divided into the following parts:
+\begin{itemize}
+    \item Part 1 provides an overview over the \basetwo \gls{ir} design, along with some technical background on existing technologies and conventions.
+    \item Part 2 is the specification of the \basetwo \gls{ir}.
+    \item Part 3 is the documentation of the \texttt{base2} dialect implementation.
+\end{itemize}
+
+\glsaddall
+
+% Acronyms.
+\PrintGlossary{acronym}
+
+% Notation.
+\PrintGlossary{notation}
+
+This document follows the requirements terminology outlined in \cite{RFC_2119}.
+
+% References.
+\PrintReferences{base2-spec}
