@@ -89,17 +89,22 @@
 \setkomafont{partentry}{\scshape\bfseries\color{heading}}
 \setkomafont{chapterentry}{\bfseries\color{heading}}
 \RedeclareSectionCommands[
-  tocentryformat=\usekomafont{disposition},
-  tocpagenumberformat=\usekomafont{disposition}
-]{section,subsection,subsubsection}
+    tocentryformat=\usekomafont{disposition},
+    tocpagenumberformat=\usekomafont{disposition}
+]{section}
+\RedeclareSectionCommands[
+    font=\usekomafont{disposition}\itshape,
+    tocentryformat=\usekomafont{disposition}\itshape,
+    tocpagenumberformat=\usekomafont{disposition}\itshape
+]{subsection,subsubsection}
 \setkomafont{pagehead}{\upshape}
 \setkomafont{pagefoot}{\upshape}
 
 % Heading indentation.
 \renewcommand*{\chapterformat}{%
-  \IfUsePrefixLine{\chapapp\nobreakspace\thechapter\autodot}{%
-    \makebox[1.5cm][l]{\thechapter\autodot\hfil}%
-  }%
+    \IfUsePrefixLine{\chapapp\nobreakspace\thechapter\autodot}{%
+        \makebox[1.5cm][l]{\thechapter\autodot\hfil}%
+    }%
 }
 \renewcommand*{\sectionformat}{\makebox[1.5cm][l]{\thesection\autodot\hfil}}
 \renewcommand*{\subsectionformat}{\makebox[1.5cm][l]{\thesubsection\autodot\hfil}}
