@@ -95,14 +95,26 @@
 \setkomafont{pagehead}{\upshape}
 \setkomafont{pagefoot}{\upshape}
 
+% Heading indentation.
+\renewcommand*{\chapterformat}{%
+  \IfUsePrefixLine{\chapapp\nobreakspace\thechapter\autodot}{%
+    \makebox[1.5cm][l]{\thechapter\autodot\hfil}%
+  }%
+}
+\renewcommand*{\sectionformat}{\makebox[1.5cm][l]{\thesection\autodot\hfil}}
+\renewcommand*{\subsectionformat}{\makebox[1.5cm][l]{\thesubsection\autodot\hfil}}
+\renewcommand*{\subsubsectionformat}{\makebox[1.5cm][l]{\thesubsubsection\autodot\hfil}}
+
 % Page margins.
 \AfterCalculatingTypearea{\geometry{paper=a4paper,left=2cm,right=2cm,top=1cm,bottom=2.5cm,bindingoffset=0cm}}
 \KOMAoptions{automark,headinclude=true,footinclude=true,headsepline,footsepline,plainfootsepline,plainheadsepline}
 \recalctypearea
 
 % Page contents vertical alignment.
-\RedeclareSectionCommand[beforeskip=0pt,afterskip=1em]{chapter}
-\RedeclareSectionCommand[beforeskip=0pt,afterskip=1em]{section}
+\RedeclareSectionCommand[beforeskip=0pt,afterskip=0pt]{chapter}
+\RedeclareSectionCommand[beforeskip=0pt,afterskip=0pt,runin=false]{section}
+\RedeclareSectionCommand[beforeskip=0pt,afterskip=0pt,runin=false]{subsection}
+\RedeclareSectionCommand[beforeskip=0pt,afterskip=0pt,runin=false]{subsubsection}
 \raggedbottom
 
 % Header and footer.

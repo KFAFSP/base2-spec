@@ -1,0 +1,540 @@
+\section{\glsentrytext{ssa} \glsentrytext{ir}}
+
+% Summary.
+A \gls{ssa} \gls{ir} is a form of program representation used by compiler infrastructures such as \LLVM.
+For the purposes of this document, we use the following simplified definitions for the structure of a \gls{ssa} \gls{ir}.
+
+\subsection{Elements}
+
+% Elements.
+Expressions in a \gls{ssa} \gls{ir} transform \term{values}[value] using \term{operations}[operation].
+The \gls{ir} is statically-typed, meaning that every \term{value} has a compile-time constant \term{type}.
+
+\begin{definition}[Type]
+    A \newterm{type} \Type[T] is a uniquely identified set.
+    The elements of this set are called the \newterm{instances}[instance] of \Type[T].
+    \term{Instances}[instance] may be shared among \term{types}[type].
+\end{definition}
+
+\begin{definition}[Value]
+    A \newterm{value} is a tuple \Value[T][t], holding an \term{instance} \(t \in \Type[T]\) of \term{type} \Type[T].
+\end{definition}
+
+\begin{definition}[Attribute]
+    An \newterm{attribute} is a constant \term{value}.
+\end{definition}
+
+\begin{definition}[Operation]
+    An \newterm{operation} \Op{} is a function between \term{values}[value]
+    \begin{equation*}
+        \Op{} : \Type[T]_1, \ldots, \Type[T]_n \to \Type[U]_1, \ldots, \Type[U]_m
+    \end{equation*}
+    where \(n\) is its \newterm{arity}.
+\end{definition}
+
+\begin{remark}{Note}
+    All \term{operations}[operation] in \basetwo are \newterm{pure}[purity], i.e., may not observe or manipulate any implicit (machine) state.
+\end{remark}
+
+\subsection{Programs}
+
+% Programs.
+Programs in \gls{ssa} form use an unbounded number of \newterm{virtual registers}[register!virtual], which are uniquely-identified storage slots for \term{values}[value].
+An algorithm in \gls{ssa} form is encoded using \term{assignments}[assignment] to these \term{virtual registers}[register!vitrual], and control flow.
+
+\begin{definition}[Assignment]
+    An \newterm{assignment} is the single \newterm{definition} of a tuple of uniquely identified \term{values}[value] \(d_i\)
+    \begin{equation*}
+        d_1, \ldots, d_m \gets \Op(u_1, \ldots, u_n)
+    \end{equation*}
+    where the \term{values}[value] \(u_i\) are the \newterm{uses}[use] of the \term{assignment}, and \Op{} is some \term{operation}.
+\end{definition}
+
+\begin{definition}[Program]
+    A \newterm{program} is a \gls{dag} of \term{assignments}[assignment], connecting their \term{uses}[use] to their respective \term{definitions}[definition].
+\end{definition}
+
+\begin{remark}{Note}
+    \basetwo does not model control flow, i.e., a \basetwo \term{program} is equivalent to an unterminated basic block in common terminology.
+\end{remark}
+
+\subsection{Undefined Behavior}
+
+% Undefined behavior.
+An \term{operation} is syntactically valid iff the \term{types}[type] of the involved \term{values}[value] match its definition.
+However, the semantics of an \term{operation} may be undefined over specific \term{instances}[instance] of these \term{types}[type].
+Evaluating an \term{operation} over \term{instances}[instance] it is not defined over is \gls{ub}.
+
+\begin{definition}[Poison value]
+    The \newterm{poison value}[value!poison] \Poison{} is a reserved symbol that represents the result of \gls{ub}.
+    We allow its use both as a \term{value} and as an \term{instance} of any \term{type}.
+\end{definition}
+
+\section{Rounding}
+
+% Summary.
+\newterm{Rounding} is the process of representing an element of a set using its most accurate counterpart from another set.
+The semantics of \term{rounding} are thus contextual.
+Assuming the elements are partially ordered, such as number-like objects, we use \term{rounding functions}[rounding function] to disambiguate this.
+
+\begin{definition}[Rounding function]
+    A function \(\RoundR{} : X \to Y\) is a \newterm{rounding function} iff
+    \begin{gather*}
+        \label{eq:exact}
+        \tag{exact}
+        x \in X \cap Y \implies \RoundR{}(x) = x \\
+        \label{eq:accurate}
+        \tag{accurate}
+        \RoundR{}(x) = x^\prime \implies R(x,x^\prime)
+    \end{gather*}
+    It must be exact, i.e., it is a superset of the identity over \(X \cap Y\).
+    It must be accurate, i.e., it always upholds some accuracy guarantee given by a predicate \(R\).
+\end{definition}
+
+\subsection{Rounding Modes}
+
+% Rounding modes.
+\term{Rounding}[rounding] is often described in terms of an algorithm, also called a \newterm{rounding mode}.
+\Cref{tab:rounding_modes} lists all \term{rounding modes}[rounding mode] used in this document, defined by their accuracy guarantee.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|r|l|l|}
+        \hline\rowcolor{tableheader}
+        \(R\) & \bfseries Name & \bfseries Constraint \\ \hline
+        \(\bot\)    & none           & --- \\
+        \Exact      & exact          & \(x^\prime = x\) \\ \hline
+                    &                & \(\min \lvert x^\prime-x \rvert\), such that \\
+        \Nearest    & nearest        & --- \\
+        \Down       & down           & \(x^\prime \ngtr x\)\\
+        \Up         & up             & \(x^\prime \nless x\)\\
+        \ToZero     & towards zero   & \(\lvert x^\prime\rvert \ngtr \lvert x\rvert\) \\
+        \FromZero   & away from zero & \(\lvert x^\prime\rvert \nless \lvert x\rvert\) \\
+        \Converge   & converge       & \(\underset{i\rightarrow\infty}{\lim}(x^\prime_i-x_i) = 0\) \\ \hline
+    \end{tabular}
+    \caption{Rounding modes}
+    \label{tab:rounding_modes}
+\end{table}
+
+% Poison value.
+Should the constraint be unsatisfiable for a given \(x\), \term{rounding} is \gls{ub}
+\begin{equation*}
+    \nexists y \in Y \ldotp R(x, y) \implies \RoundR{}(x) = \Poison
+\end{equation*}
+
+\subsection{Overflow and Underflow}
+
+% Overflow and underflow.
+Assuming the result set is bounded, a special case of \term{rounding} occurs when \(x > \max Y\) or \(x < \min Y\).
+This is called \newterm{overflow} and \newterm{underflow} respectively.
+The \term{rounding modes}[rounding mode] dictate a particular \newterm{saturation} behavior in this case, shown in \cref{tab:saturation}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|r|cc|r|}
+        \hline\rowcolor{tableheader}
+        \bfseries Mode & \bfseries Underflow & \bfseries Overflow & \bfseries Action \\ \hline
+        \(\bot\)  & \multicolumn{2}{c|}{\impldef} & --- \\
+        \Exact    & \Poison    & \Poison    & \emph{poison} \\ \hline
+        \Nearest  & \(\min Y\) & \(\max Y\) & \emph{saturate} \\
+        \Down     & \impldef   & \(\max Y\) & \emph{half-saturate} \\
+        \Up       & \(\min Y\) & \impldef   & \emph{half-saturate} \\
+        \ToZero   & \(\min Y\) & \(\max Y\) & \emph{saturate} \\
+        \FromZero & \multicolumn{2}{c|}{\impldef} & --- \\
+        \Converge & \multicolumn{2}{c|}{\impldef} & --- \\ \hline
+    \end{tabular}
+    \caption{Saturation on overflow/underflow}
+    \label{tab:saturation}
+\end{table}
+
+\subsection{Broadening and Narrowing}
+
+% Broadening and narrowing.
+\newterm{Broadening}[broadening] is rounding where \(X \subseteq Y\), which is trivial and always exact.
+The opposite is \newterm{narrowing}, where \(Y \subset X\) and the result is potentially inexact.
+An example of \term{narrowing} is the \newterm{integer rounding function} \(\ZRoundR : \Rat \to \Int\).
+
+\section{Quantization}
+
+% Definition.
+\newterm{Quantization}[quantization] is the process of mapping numbers observed in an algorithm to numbers that can be represented on the target machine.
+For each variable, a \term{quantization function} must be determined.
+
+\begin{definition}[Quantization function]
+    A \newterm{quantization function} is a function that maps numbers from one field to another.
+    It is not required to be injective, but an inverse must be defined.
+\end{definition}
+
+\subsection{Uniform Affine Integer Quantization}
+
+% Uniform affine integer quantization.
+A common form of \term{quantization} is mapping rational values to integers using linear functions.
+
+\begin{definition}[Uniform affine integer quantization]
+    A \newterm{uniform affine integer quantization}[quantization!uniform affine integer] and its \term{quantization function} \(\Pi: \Rat \to \Int\) are characterized by a \newterm{scaling factor} \(\delta x\) and a \newterm{zero point} offset \(x_0\)
+    \begin{align*}
+        \label{eq:linear_quant}
+        \tag{linear-quant}
+        \Pi(q) = \ZRound\left(\frac{q}{\delta x} - x_0\right) && \Pi^{-1}(z) = z\delta x + x_0
+    \end{align*}
+    where \ZRound{} is an \term{integer rounding function}.
+\end{definition}
+
+\section{Integer Division}
+
+% Summary.
+In an \term{integer division}, the rational result of a division is \term{rounded}[rounding] to an integer value.
+
+\begin{definition}[Integer division]
+    The \newterm{integer division} operator \IDivR{} is defined as
+    \begin{align*}
+        \IDivR{} : \Rat \times \Rat \to \Int \\
+        \label{eq:idiv}
+        \tag{idiv}
+        a \IDivR{} b = \ZRoundR\left(\frac{a}{b}\right)
+    \end{align*}
+    where \ZRoundR{} is the \term{integer rounding function} and \(R\) is the \term{rounding mode}.
+\end{definition}
+
+\subsection{Modulo Operator}
+
+% Introduction.
+Some programming languages define a \Rem{} operator, which is often referred to as the \newterm{modulo operator}.
+Assuming \(a, b \in \Rat\), it is usually constrained via the equation
+\begin{align*}
+    a = zb + (a \Rem b) && z \in \Int
+\end{align*}
+which is ambiguous in the choice of \(z\).
+
+% Via integer division.
+The modulo operator is closely associated with \term{integer division} \IDiv{}, which can be used to refine this definition.
+For example, the C++20 standard \cite{ISO_C_N4860} gives the following equation
+\begin{equation}
+    \label{eq:rem}
+    \tag{rem}
+    a = \left(a \IDiv b\right)b + (a \Rem b)
+\end{equation}
+which is ambiguous in the rounding applied by \IDiv{}.
+In the C++ standard, this used to be \impldef, but had to satisfy \(a \ge 0 \land b \ge 0 \implies (a \Rem b) \ge 0\).
+
+% With implicit rounding.
+Languages like Fortran and Python solve this issue by having a specified implicit rounding mode.
+For example, the Fortran 202x standard \cite{ISO_F_N2184} defines the \texttt{MOD} and \texttt{MODULO} functions.
+The former applies integer truncation (\ToZero), the latter rounds down (\Down).
+For compatibility reasons, the C++0x standard adopted the \ToZero{} convention.
+Python, on the other hand, rounds down (\Down), which is consistent with its integer division operator \texttt{//}.
+
+% Integer truncation convention.
+\begin{highlight}{Integer Truncation Convention}
+The choice of rounding is controversial amongst users and maintainers alike.
+An important advantage of truncation is that it satisfies
+\begin{align*}
+    (-a) \IDivR[\ToZero] b = -(a \IDivR[\ToZero] b) = a \IDivR[\ToZero] (-b) &&
+    (a \RemR[\ToZero] b) < 0 \iff a < 0
+\end{align*}
+First, this means that integer division is associative.
+Secondly, a non-negative dividend results in a non-negative remainder, which is useful for index calculations (e.g., ring buffers, etc.).
+\end{highlight}
+
+\subsection{Remainder}
+
+% Remainder.
+Disambiguating the modulo operator, we define the \term{remainder} of \term{integer division} as follows.
+
+\begin{definition}[Remainder]
+    The \newterm{remainder} operator \RemR{} is defined as
+    \begin{align*}
+        \RemR{} : \Rat \times \Rat \to \Rat \\
+        \label{eq:divrem}
+        \tag{divrem}
+        a \RemR{} b = a - (a \IDivR b)b
+    \end{align*}
+    where \(R\) is the \term{rounding mode} of the underlying \term{integer division}.
+\end{definition}
+
+\section{Bit Sequences}
+
+% Summary.
+A binary data encoding represents a datum using an ordered sequences of bits.
+Without loss of generality, this document implies a canonical order of the bits in a sequence.
+
+\begin{definition}[Bit sequence]
+    A \newterm{bit sequence} \(b = (\Sbit, \ldots, b_n)\) of length \(\Bwidth(b) = n\) is an ordered sequence of bits \(b_i \in \{0, 1\}\).
+    Bit \Sbit{} is defined to be the \gls{msb}, and bit \(b_n\) is the \gls{lsb}.
+\end{definition}
+
+\begin{definition}[Bit universe]
+    The \newterm{bit universe} \(\Buniv_n = \{0,1\}^n\) is the set of all \term{bit sequences}[bit sequence] of length \(n\).
+\end{definition}
+
+% ISA.
+A hardware implementation of a machine using binary data formats provides storage for \term{bit sequences}[bit sequence] in the form of registers and memory.
+The corresponding \gls{isa} defines how the instructions interact with this storage, which may be subject to global and contextual limitations.
+
+\subsection{Padding}
+
+% Addressing granularity.
+The length of the shortest addressable \term{bit sequence} is the \newterm{addressing granularity} of the system.
+A typical value is \(8\) bits, which corresponds to a \newterm{byte} being the smallest addressable unit of data.
+Sequences shorter than this length are subject to implicit \term{padding}.
+
+\begin{definition}[Padding]
+    \newterm{Padding}[padding] refers to extending the length of a \term{bit sequence} by concatenating bits.
+\end{definition}
+
+% User-defined types.
+By definition, the value of the \term{padded}[padding] bits is irrelevant.
+Although purely an artifact of interpretation, a user-defined type is also said to be \term{padded}[padding] if it contains unused \term{bit subsequences}[bit sequence].
+
+\subsection{Alignment}
+
+% Address alignment.
+Operands may be subject to instruction-dependent contextual addressing restrictions, such as an \term{alignment} restriction.
+This restriction states that allowed addresses must be multiples of some integer.
+
+\begin{definition}[Alignment]
+    An \newterm{alignment}[alignment] of \(A \in \Nat\setminus\{0\}\) is a contextual- or \term{type} requirement on an \term{instance} address \(a\)
+    \begin{equation*}
+        a \equiv 0 \mod A
+    \end{equation*}
+\end{definition}
+
+% Alignment and padding.
+Suppose contiguous elements of size \(s\) starting from base address \(b\) must be used with \term{alignment} \(A\).
+This requirement is trivially fulfilled if the element type is \term{aligned}[alignment] and sized in multiples of \(A\)
+\begin{equation*}
+    b \equiv 0 \mod A \land s \equiv 0 \mod A
+\end{equation*}
+which can be always be achieved by \term{padding}.
+
+\section{Binary Integers}
+
+% Summary.
+A \newterm{binary integer}[integer!binary] is a binary encoding of an integer value, i.e., a (typed) \term{bit sequence} that has an unambiguous interpretation as an integer.
+For the purposes of \basetwo, we define a canonical encoding.
+
+\subsection{Unsigned}
+
+% Unsigned integers.
+\term{Unsigned integers}[integer!unsigned] of bit width \(n\) are commonly implemented to model the cyclic group \(\Int_{2^n}\).
+This also defines their expected operational semantics.
+
+\begin{definition}[Unsigned integer]
+    A \term{bit sequence} \(b \in \Buniv_n\) is interpreted as an \newterm{unsigned integer}[integer!unsigned] following the canonical bit order
+    \begin{equation}
+        \label{eq:uint}
+        \tag{uint}
+        \InterpT[uint](b) = \sum_{i = 1}^{n} b_i 2^{n-i}
+    \end{equation}
+    Its limits are
+    \begin{equation}
+        \label{eq:uint_range}
+        \tag{uint-range}
+        \InterpT[uint](\Buniv_n) = [0, 2^n) \subset \Nat
+    \end{equation}
+\end{definition}
+
+\subsection{Signed}
+
+% Negative values.
+Encoding a negative value without a sign symbol requires a modified encoding.
+For example:
+
+\begin{tabularx}{\textwidth}{>{\bfseries}lX}
+    Sign \& magnitude &
+
+    The sign and absolute value of the number are stored.
+    The range of positive and negative values is symmetric, and \(+0=-0\).\\
+
+    One's complement &
+
+    Negative numbers are the bitwise complement of their absolute value.
+    The range of positive and negative values is symmetric, and \(+0=-0\).\\
+
+    Two's complement &
+
+    Negative numbers are detectable via the \gls{msb}.
+    There is one more negative value than there are positive values.
+    Only \(0\) has magnitude \(0\).
+\end{tabularx}
+
+% Two's complement.
+The \term{two's complement} representation is a homomorphism for the \term{signed integers}[integer!signed] onto the cyclic group \(\Int_{2^n}\), which are the corresponding \term{unsigned integers}[integer!unsigned].
+In particular
+\begin{equation*}
+    \label{eq:sint_uint}
+    \tag{sint-uint}
+    \InterpT[uint](b) \equiv \InterpT[sint](b) \mod 2^n
+\end{equation*}
+
+\begin{definition}[Signed integer]
+    A \term{bit sequence} \(b \in \Buniv_n\) is interpreted as a \newterm{signed integer}[integer!signed] following the canonical bit order and using the \newterm{two's complement} representation
+    \begin{equation}
+        \label{eq:sint}
+        \tag{sint}
+        \InterpT[sint](b) = -\Sbit 2^{n-1} + \sum_{i=1}^{n} b_i 2^{n-i} = \begin{cases}
+            \InterpT[uint](b) & \Sbit = 0 \\
+            2^N - \InterpT[uint](b) - 2 & \Sbit = 1
+        \end{cases}
+    \end{equation}
+    where \Sbit{} is called the \newterm{sign bit}.
+    Its limits are
+    \begin{equation}
+        \label{eq:sint_range}
+        \tag{sint-range}
+        \InterpT[sint](\Buniv_n) = [-2^{n-1}, 2^{n-1}) \subset \Int
+    \end{equation}
+\end{definition}
+
+% Two's complement dominance.
+\begin{highlight}{Two's Complement Dominance}
+Virtually all systems with \term{binary integers}[integer!binary] in use today use the \term{two's complement} representation.
+This lead to the ISO C/C++ committe reaching a consensus about the use of \term{two's complement} in their programming languages.
+After previously only requiring \term{unsigned integers}[integer!unsigned] to model \(\Int_{2^n}\), C11 and C++20 now additionally require \term{two's complement}, und thus the same behavior, for \term{signed integers}[integer!signed].
+See \cite{ISO_C_N2218,ISO_C_P0907R4} for discussions on advantages and drawbacks.
+\end{highlight}
+
+\subsection{Signless}
+
+% Signedness
+Since a \term{bit sequence} can be interpreted as either a \term{signed}[integer!signed] or \term{unsigned}[integer!unsigned] integer, a \term{binary integer}[integer!binary] must have an associated \newterm{signedness} to disambiguate.
+\Glspl{ir} like \LLVMIR use \newterm{signless integers}[integer!signless], which do not carry this information, and thus do not have an interpretation.
+
+\subsection{Truncation}
+
+% Truncation.
+A \term{binary integer}[integer!binary] \(z\) can be \term{truncated}[integer truncation] to a shorter bit width \(n\).
+If \(z\) is unsigned, the result will be exact iff \(z < 2^n\), otherwise it will be exact iff \(2^{n-1} \le z < 2^{n}\).
+Otherwise, information is lost during truncation.
+
+\begin{definition}[Integer truncation]
+    A \term{binary integer}[integer!binary] \(z\) of bit width \(n\) is \term{truncated}[integer truncation] to \(z^\prime\) with bit width \(m \le n\) by removing the first \(n - m\) \glspl{msb} such that
+    \begin{equation*}
+        \label{eq:trunc}
+        \tag{trunc}
+        z^\prime \equiv z \mod 2^m
+    \end{equation*}
+\end{definition}
+
+\subsection{Extension}
+
+% Extension.
+A \term{binary integer}[integer!binary] can be appropriately \term{extended}[integer extension] to a longer bit width.
+The result is always exact.
+
+\begin{definition}[Integer extension]
+    A \term{binary integer}[integer!binary] \(z\) of bit width \(n\) is \term{extended}[integer extension] to \(z^\prime\) with bit width \(m \ge n\) by prepending \(m - n\) \glspl{msb} such that
+    \begin{equation*}
+        \label{eq:ext}
+        \tag{ext}
+        z^\prime = z
+    \end{equation*}
+    \begin{itemize}
+        \item For \term{unsigned integers}[integer!unsigned], \((0)^{m-n}\) is prepended (\newterm{zero extension}).
+        \item For \term{signed integers}[integer!signed], \((\Sbit)^{m-n}\) is prepended (\newterm{sign extension}).
+    \end{itemize}
+\end{definition}
+
+\subsection{Shifting}
+
+% Bit shifting.
+The digits of a \term{binary integer}[integer!binary] can be shifted towards the left or right.
+Bits are inserted or discarded as needed.
+Shifting is the strength-reduced form of multiplication by powers of \(2\).
+
+\begin{definition}[Left shift]
+    The \newterm{left shift} of \term{binary integer}[integer!binary] \(z\) of bit width \(n\) by \(k \in \Nat\) places is given by
+    \begin{equation*}
+        \label{eq:shl}
+        \tag{shl}
+        z \mathbin{\texttt{<<}} k \equiv z \cdot 2^k \mod 2^n
+    \end{equation*}
+\end{definition}
+
+% Left shift.
+For an \term{unsigned integer}[integer!unsigned], the result of \term{left shifting}[left shift] by \(k\) will be exact iff \((\Sbit, \ldots, b_k) = (0)^k\).
+For a \term{signed integer}[integer!signed], the result of \term{left shifting}[left shift] by \(k\) will be exact iff \((\Sbit, \ldots, b_{k+1}) = (\Sbit)^{k+1}\).
+
+\begin{definition}[Right shift]
+    The \newterm{right shift} of \term{binary integer}[integer!binary] \(z\) of bit width \(n\) by \(k \in \Nat\) places is given by
+    \begin{equation*}
+        \label{eq:shr}
+        \tag{shr}
+        z \mathbin{\texttt{>>}} k = \lfloor z \cdot 2^{-k} \rfloor
+    \end{equation*}
+\end{definition}
+
+\subsection{Byte Order}
+
+% Introduction.
+Hardware implementations of \term{binary integers}[integer!binary] can internally arrange the digits in any order.
+As long as the data stays on the system, the bit order inside the unit of \term{addressing granularity} is irrelevant.
+
+% Byte order.
+Suppose the machine has \term{byte}-wise \term{addressing granularity}.
+A \term{binary integer}[integer!binary] wider than a \term{byte} must be split and \term{padded}[padding] into \term{bytes}[byte] to be stored or transmitted.
+Assuming consecutivity, the order of these \term{bytes}[byte] is called the \newterm{endian}.
+The most common ones are:
+
+\begin{tabularx}{\textwidth}{>{\bfseries}lX}
+    little-endian &
+
+    \term{Bytes}[byte] are stored from \gls{lsb} to \gls{msb}.\\
+
+    big-endian &
+
+    \term{Bytes}[byte] are stored from \gls{msb} to \gls{lsb}.\\
+\end{tabularx}
+
+\section{Binary Rationals}
+
+% Summary.
+Encoding a rational value in binary without a separator symbol requires a specialized encoding.
+This can be achieved by using a pair of integer values to represent the rational value.
+
+\begin{definition}[Binary rational number]
+    The \newterm{binary rational numbers}[number!binary rational] model the rational numbers using an integer \newterm{significand} \(z\) and \newterm{binary exponent} \(E\).
+    \begin{equation*}
+        \Rat = \{z \cdot 2^E : z, E \in \Int\}
+    \end{equation*}
+\end{definition}
+
+\subsection{Fixed-point}
+
+% Fixed-point.
+In cases where the \term{binary exponent} can be inferred from the context, it may be omitted.
+For \(E=0\), the binary \term{binary fixed-point numbers}[number!binary fixed-point] are equivalent to the \term{binary integers}[integer!binary].
+
+\begin{definition}[Binary fixed-point number]
+    A \newterm{binary fixed-point number}[number!binary fixed-point] is a \term{binary rational number}[number!binary rational] with an implied exponent \(E\).
+\end{definition}
+
+\subsection{Floating-point}
+
+% Floating-point.
+Encoding the \term{binary exponent} explicitly increases the value range at the cost of accuracy.
+
+\begin{definition}[Binary floating-point number]
+    A \newterm{binary floating-point number}[number!binary floating-point] is a \term{binary rational number}[number!binary rational] with an explicit, variable exponent \(E\).
+    Implementations may also represent non-rational values.
+\end{definition}
+
+\subsection{Non-finite}
+
+% Non-rational values.
+\term{Binary floating-point}[number!binary floating-point] implementations such as IEEE-754 \cite{IEEE_754} also represent non-finite values.
+A non-finite value is not in \Rat{}, and not necessarily ordered with other values.
+
+% Infinity.
+IEEE-754 defines the positive and negative infinities \(\pm\infty\) and orders them as follows
+\begin{gather*}
+    \forall q \in \Rat{}\ldotp -\infty < q < \infty \\
+    \lvert\pm\infty\rvert = \lvert\pm\infty\rvert
+\end{gather*}
+which means their magnitude is greater than that of any finite value.
+In practice, they are represented using out-of-range \term{exponent}[binary exponent] values.
+
+% NaN.
+IEEE-754 represents values resulting from \gls{ub} as \gls{nan} values.
+Different values exists, differing in payload and signalling behavior.
+They are unordered with all values.
