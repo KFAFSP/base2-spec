@@ -1,0 +1,252 @@
+% Summary.
+\basetwo declares some specialized terminology to simplify and disambiguate its specification.
+These concepts are tied to \basetwo specifically, and the definitions in this chapter take precedence over any external to this document.
+
+\section{Interpretation}
+
+% Summary.
+\newterm{Interpretation}[interpretation] is the act of determining the numeric value that is represented by a \term{typed}[type] \term{bit sequence}.
+For this purpose, we associate each \term{interpretable type}[type!interpretable] with an \term{interpretation function} \(\Interp\).
+
+\begin{definition}[Interpretation function]
+    The \newterm{interpretation function} \InterpT[P] of type \Type[P] takes the form
+    \begin{gather*}
+        \InterpT[P] : \Type[P] \to \PointsT[P] \\
+        \PointsT[P] \subseteq \Rat \cup \ExtT[P]
+    \end{gather*}
+    where \PointsT[P] is the set of \term{points}[point] represented by \Type[P], and \ExtT[P] are the \impldef \term{points}[point] of \Type[P].
+\end{definition}
+
+% Total interpretation function.
+We can extend this function to be defined over \Buniv{} by mapping all \term{bit sequences}[bit sequence] outside \Type[P] to \Poison
+\begin{equation*}
+    \label{eq:tot_interp}
+    \tag{tot-interp}
+    \Interp^{\prime}_{\Type[P]}(b) = \begin{cases}
+        \InterpT[P](b) & b \in \Type[P] \\
+        \Poison & b \notin \Type[P]
+    \end{cases}
+\end{equation*}
+creating a \newterm{total interpretation function}[interpretation function!total] \(\Interp^{\prime}\).
+
+% Inverse interpretation function.
+Additionally, we assume the existence of an  \newterm{inverse interpretation function}[interpretation function!inverse] \(\Interp^{-1}\) such that
+\begin{equation*}
+    \label{eq:inv_interp}
+    \tag{inv-interp}
+    \InterpT[P]\left(\Interp^{-1}_{\Type[P]}\left(p\right)\right) = p
+\end{equation*}
+which selects some \term{bit sequence} representing \(p\) for all \(p \in \PointsT[P]\).
+
+\subsection{Points}
+
+% Summary.
+\term{Number types}[type!number] in \basetwo model algebraic fields, which are comprised of number-like objects.
+We introduce the concept of \term{points}[point] of an \term{interpretable type}[type!interpretable] to relax from rational numbers to such objects.
+
+\begin{definition}[Point]
+    A \newterm{point} is an object represented by an \term{interpretable type}[type!interpretable].
+    A \term{point} \(p\) is either \newterm{rational}[point!rational] (\(p \in \Rat\)), or \newterm{extended}[point!extended] (\(p \notin \Rat\)).
+\end{definition}
+
+\subsubsection{Rational Points}
+
+% Rational numbers.
+A \newterm{rational point}[point!rational] is simply a rational number.
+The field of rational numbers \Rat{} as modeled by \term{binary rational numerals}[rational!binary] is the full extent of \basetwo's number system.
+All operational semantics of \basetwo are specified with respect to \term{rational points}[point!rational].
+
+\subsubsection{Extended Points}
+
+% Extended points.
+An \term{interpretable type}[type!interpretable] \Type[P] may have an \impldef set \ExtT[P]{} of \newterm{extended points}[point!extended].
+These \term{points}[point] may not represent rational numbers (\(\ExtT[P]{} \cap \Rat = \emptyset\)), and all uses of them constitute \impldef behavior.
+Examples of this are non-finite values such as described in \cref{sec:non_finite}.
+
+\section{Representation}
+
+% Summary.
+\newterm{Representation}[representation] is the act of constructing a \term{typed}[type] \term{bit sequence} from a numeric value.
+It is the opposite of \term{interpretation}.
+For this purpose, we associate each \term{number type}[type!number] with a \term{point rounding function}.
+
+\begin{definition}[Point rounding function]
+    The \newterm{point rounding function} \RoundTR[N] of \term{type} \Type[N] is a \term{rounding function} over the rational numbers
+    \begin{equation*}
+        \RoundTR[N] : \Rat \to \PointsT[N]
+    \end{equation*}
+\end{definition}
+
+% Representation using inverse interpretation.
+Given \(q \in \Rat\), the \term{bit sequence} \(b\) representing \(q\) in \term{type} \Type[N] with \term{accuracy guarantee}[rounding mode] \(R\) is obtained via
+\begin{equation*}
+    \label{eq:repr}
+    \tag{repr}
+    b = \Interp^{-1}_{\Type[N]}\left(\RoundTR[N]\left(q\right)\right)
+\end{equation*}
+where \(\Interp^{-1}_{\Type[N]}\) is the \term{inverse interpertation function}[interpretation function!inverse].
+Following this definition, rational numbers in \Type[N] are part of an implied congruence relation \CongTR[N]{}
+\begin{equation*}
+    \label{eq:cong}
+    \tag{cong}
+    q \CongTR[N] \RoundTR[N]\left(q\right)
+\end{equation*}
+
+\subsection{Point-based Rounding}
+
+% Point-based rounding.
+Suppose \(x \in \Rat\) shall be represented in \term{type} \Type[N].
+Let \(A, B \in \PointsT[N]\) be a pair of adjacent \term{points}[point] such that \(A \le x \le B\) and \(\nexists C\in\PointsT[N]\ldotp A < C < B\).
+\Cref{fig:point_rounding} then provides the definition of \RoundTR[N].
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=2]
+        % Number line.
+        \draw[-latex] (-0.5,0) -- (3.5,0);
+        \draw[fill=black] (0,0) circle (2pt) node[below=5pt] {A};
+        \draw (1.5,-3pt) -- (1.5,3pt);
+        \draw[fill=black] (3,0) circle (2pt) node[below=5pt] {B};
+
+        % ULP.
+        \draw (0,-12pt) -- (0,-18pt);
+        \draw (3,-12pt) -- (3,-18pt);
+        \draw[latex-latex] (0,-15pt) -- (3,-15pt) node [pos=0.5, below=3pt] {\(1\,\ulp\)};
+
+        % Exact.
+        \draw (-0.1,0.5) rectangle ++(0.2,-0.25) node[pos=0.5] {A};
+        \draw (2.9,0.5) rectangle ++(0.2,-0.25) node[pos=0.5] {B};
+        \draw (0.1,0.5) rectangle ++(2.8,-0.25) node[pos=0.5] {\Poison};
+        \node at (-1.25,0.38) {exact (\Exact)};
+        \node at (4,0.38) {\(= 0\,\ulp\)};
+
+        % None.
+        \draw (-0.1,0.8) rectangle ++(0.2,-0.25) node[pos=0.5] {A};
+        \draw (2.9,0.8) rectangle ++(0.2,-0.25) node[pos=0.5] {B};
+        \draw[pattern=north east lines] (0.1,0.8) rectangle ++(2.8,-0.25);
+        \node at (-1.25,0.68) {none (\(\bot\))};
+        \node at (4,0.68) {--};
+
+        \node at (1.45,1.275) {\impldef};
+        \draw[-latex] (1.5,1.4) -- (1.5,1.75);
+        \draw[-latex] (1.5,1.1) -- (1.5,0.8);
+
+        % Nearest.
+        \draw (-0.1,2) rectangle ++(1.5,-0.25) node[pos=0.5] {A};
+        \draw (1.6,2) rectangle ++(1.5,-0.25) node[pos=0.5] {B};
+        \draw[pattern=north east lines] (1.4,2) rectangle ++(0.2,-0.25);
+        \node at (-1.25,1.88) {nearest (\Nearest)};
+        \node at (4,1.88) {\(\le 0.5\,\ulp\)};
+
+        % Down.
+        \draw (-0.1,2.3) rectangle ++(3.0,-0.25) node[pos=0.5] {A};
+        \draw (2.9,2.3) rectangle ++(0.2,-0.25) node[pos=0.5] {B};
+        \node at (-1.25,2.18) {down (\Down)};
+        \node at (4,2.18) {\(< 1\,\ulp\)};
+
+        % Up.
+        \draw (0.1,2.6) rectangle ++(3.0,-0.25) node[pos=0.5] {B};
+        \draw (-0.1,2.6) rectangle ++(0.2,-0.25) node[pos=0.5] {A};
+        \node at (-1.25,2.48) {up (\Up)};
+        \node at (4,2.48) {\(< 1\,\ulp\)};
+
+        % Header.
+        \node at (1.5,2.9) {\bfseries Result};
+        \node at (-1.25,2.9) {\bfseries Mode};
+        \node at (4,2.9) {\bfseries Error};
+    \end{tikzpicture}
+    \caption{\term{Point}[point]-based \term{rounding}}\label{fig:point_rounding}
+\end{figure}
+
+% ULP error.
+The distance between \(A\) and \(B\) is defined as \(1\) \glsfirst{ulp}, which is used to bound the error of \term{rounding}.
+A result is said to be mathematically \newterm{correctly rounded}[rounding!correct] when the error is \(\le 0.5\,\ulp\).
+
+% Towards and away from zero.
+The towards zero (\ToZero) and away from zero (\FromZero) \term{rounding modes}[rounding mode] are zero-relative (cf. \cref{tab:zero_rel_rounding}).
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|r|l|l|}
+        \hline\rowcolor{tableheader}
+        Case      & towards zero (\ToZero) & away from zero (\FromZero) \\
+        \hline
+        \(x < 0\) & up (\Up)               & down (\Down) \\
+        \(x > 0\) & down (\Down)           & up (\Up) \\
+        \hline
+    \end{tabular}
+    \caption{Zero-relative rounding}
+    \label{tab:zero_rel_rounding}
+\end{table}
+
+% Collisions with the zero point.
+Note that there is no requirement \(0 \in \PointsT[N]\), i.e., zero is not a required \term{point} of all \term{number types}[type!number].
+It follows that rounding \(0\) using a zero-relative \term{rounding mode} may be undefined.
+We relax this to
+\begin{equation*}
+    0 \notin \PointsT[N] \land (R = \FromZero \lor R = \ToZero) \implies \RoundTR[N](0) \in \{A, B\}
+\end{equation*}
+
+\section{Relations}
+
+% Summary.
+The concept of \term{interpretation} allows the definition of intuitive relations on \term{types}[type] and their \term{values}[value].
+
+\subsection{Subtype Relation}
+
+% Subtype relation.
+Using the \term{points}[point] of \term{interpretable types}[type!interpretable], we establish a relation that determines whether the value range of one \term{type} is included within another.
+Such a \term{type} is a \term{subtype} of the other.
+
+\begin{definition}[Subtype relation]
+    The \newterm{subtype relation}[subtype] between \term{interpretable types}[type!interpretable] \Type[A] and \Type[B] is given by
+    \begin{equation*}
+        \label{eq:subtype}
+        \tag{subtype}
+        \Type[A] \SubTEq \Type[B] \iff \PointsT[A] \subseteq \PointsT[B]
+    \end{equation*}
+    where \PointsT{} are the \term{points}[point] of \term{type} \Type[T].
+\end{definition}
+
+\subsection{Type Promotion}
+
+% Type promotion.
+An \newterm{archetype} is a logical class of related \term{number types}[type!number], which are often different instances of some parametric \term{type} template.
+\term{Type promotion}[type promotion] produces a related type that unites the value ranges of the specified types from the same \term{archetype}.
+
+\begin{definition}[Type promotion]
+    The \newterm{type promotion operator}[type promotion] \Promote{} obtains the minimal common supertype of \Type[A] and \Type[B]
+    \begin{align*}
+        \Type[A] \Promote \Type[B] = \Type[AB] &\implies \Type[A] \SubTEq \Type[AB] \land \Type[B] \SubTEq \Type[AB] \tag{prom-super}\label{eq:prom_super}\\
+        &\implies \nexists \Type[C] \ne \Type[AB]\ldotp\Type[A] \SubTEq \Type[C] \land \Type[B] \SubTEq \Type[C] \land \Type[C]\SubTEq\Type[AB] \tag{prom-min}\label{eq:prom_min}
+    \end{align*}
+    where \Type[A], \Type[B], \Type[AB], \Type[C] are \term{interpretable types}[type!interpretable] of the same \term{archetype}.
+\end{definition}
+
+% Type promotion operator.
+Unless the trivial solution \(\Type[A] \SubTEq \Type[B] \implies \Type[A] \Promote \Type[B] = \Type[B]\) can be used, the implementation of the \term{promotion operator}[type promotion] is specific to the \term{archetype}.
+However, the following identities must always hold
+\begin{align*}
+    \Type[A] \Promote \Type[B] &= \Type[B] \Promote \Type[A] \tag{prom-commute}\label{eq:prom_commute}\\
+    \Type[A] \Promote \Type[A] &= \Type[A] \tag{prom-idem}\label{eq:prom_idem}\\
+    \Type[A] \Promote (\Type[B] \Promote \Type[C]) &= (\Type[A] \Promote \Type[B]) \Promote \Type[C] \tag{prom-assoc}\label{prom:prom_assoc}\\
+\end{align*}
+
+\subsection{Partial Ordering}
+
+% Partial ordering.
+Given that the \term{points}[point] of an \term{interpretable type}[type!interpretable] are partially ordered, we extend this relation to its \term{values}[value].
+
+\begin{definition}[Partial ordering relation]
+    The \newterm{partial ordering relation} \(\LessT\) over \term{values}[value] of \term{interpretable types}[type!interpretable] \(\Type[T], \Type[U]\) is defined as
+    \begin{equation*}
+        (t : \Type[T]) \LessT (u : \Type[U]) \iff \InterpT[T](t) \preceq \InterpT[U](u)
+    \end{equation*}
+\end{definition}
+
+% Minima and maxima.
+We define the \newterm{minimal}[point!minimal] and \newterm{maximal}[point!maximal] \term{points}[point] of type \Type{} via
+\begin{align}
+    \Type_{\min} = \min \PointsT &= \{t_{\min} : \forall x \in \PointsT : t_{\min} \leq x \land x \nleq t_{\min}\}\tag{minima}\label{eq:minima} \\
+    \Type_{\max} = \max \PointsT &= \{t_{\max} : \forall x \in \PointsT : x \leq t_{\max} \land t_{\max} \nleq x\}\tag{maxima}\label{eq:maxima}
+\end{align}

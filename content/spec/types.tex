@@ -1,0 +1,30 @@
+
+\begin{figure}
+    \centering
+    \begin{tikzpicture}
+        \tikzset{type/.style = {shape=rectangle,draw,minimum size=1.5em}}
+        \tikzset{specialization/.style = {->,>=Triangle}}
+
+        \node[type] (B) at (0,3) {Bit sequence type \Type[B]};
+        \node[type] (P) at (0,2) {Interpretable type \Type[P]};
+        \node[type] (N) at (0,1) {Number type \Type[N]};
+        \node[type] (F) at (-2,0) {Fixed-point type \Type[F]};
+        \node[type] (R) at (2,0) {Floating-point type \Type[R]};
+        \node[type] (I) at (-2,-1) {Integer type \Type[I]};
+
+        \draw[specialization] (I) to (F);
+        \draw[specialization] (R) to (N);
+        \draw[specialization] (F) to (N);
+        \draw[specialization] (N) to (P);
+        \draw[specialization] (P) to (B);
+
+        \tikzset{annot/.style = {shape=rectangle}}
+
+        \node[annot] at (6,3) {\BwidthT[B]};
+        \node[annot] at (6,2) {\InterpT[P]};
+        \node[annot] at (6,1) {\RoundTR[N]};
+        \node[annot] at (6,0) {\(z, E\)};
+    \end{tikzpicture}
+    \caption{The \basetwo type hierarchy.}
+    \label{fig:type_hierarchy}
+\end{figure}

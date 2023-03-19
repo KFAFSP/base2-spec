@@ -32,6 +32,7 @@
 \RequirePackage{graphicx}
 \RequirePackage{tikz}
     \usetikzlibrary{arrows.meta}
+    \usetikzlibrary{patterns}
 
 % Boxes.
 \RequirePackage{mdframed}
@@ -111,6 +112,10 @@
 \renewcommand*{\subsectionformat}{\makebox[1.5cm][l]{\thesubsection\autodot\hfil}}
 \renewcommand*{\subsubsectionformat}{\makebox[1.5cm][l]{\thesubsubsection\autodot\hfil}}
 
+% Numbered run-in subsubections.
+\setcounter{secnumdepth}{3}
+\renewcommand{\sectioncatchphraseformat}[4]{\hskip #2#3#4.}
+
 % Page margins.
 \AfterCalculatingTypearea{\geometry{paper=a4paper,left=2cm,right=2cm,top=1cm,bottom=2.5cm,bindingoffset=0cm}}
 \KOMAoptions{automark,headinclude=true,footinclude=true,headsepline,footsepline,plainfootsepline,plainheadsepline}
@@ -120,7 +125,7 @@
 \RedeclareSectionCommand[beforeskip=0pt,afterskip=0pt]{chapter}
 \RedeclareSectionCommand[beforeskip=0pt,afterskip=0pt,runin=false]{section}
 \RedeclareSectionCommand[beforeskip=0pt,afterskip=0pt,runin=false]{subsection}
-\RedeclareSectionCommand[beforeskip=0pt,afterskip=0pt,runin=false]{subsubsection}
+\RedeclareSectionCommand[beforeskip=0pt,afterskip=3pt,runin=true]{subsubsection}
 \raggedbottom
 
 % Header and footer.

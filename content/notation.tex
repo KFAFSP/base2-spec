@@ -108,6 +108,7 @@
 \NewDocumentCommand{\RoundTR}{O{T}O{R}}{\ensuremath{\underset{#2}{\Round_{\Type[#1]}}}}
 \newcommand*{\ZRound}{\ensuremath{\Round_{\Int}}}
 \NewDocumentCommand{\ZRoundR}{O{R}}{\ensuremath{\underset{#1}{\ZRound}}}
+\NewDocumentCommand{\CongTR}{O{T}O{R}}{\ensuremath{\underset{#2}{\cong_{\Type[#1]}}}}
 
 % Rounding modes.
 \newglossaryentry{sym:exact}{
@@ -171,3 +172,30 @@
 }
 \newcommand*{\Rem}{\gls{op:rem}}
 \NewDocumentCommand{\RemR}{O{R}}{\ensuremath{\underset{#1}{\Rem}}}
+
+% ULP unit.
+\newcommand*{\ulp}{\ensuremath{\text{\gls{ulp}}}}
+
+% Subtype relation.
+\newglossaryentry{sym:subteq}{
+    name={\ensuremath{\sqsubseteq}},
+    description={Subtype relation.},
+    sort={c subtype relation}
+}
+\newcommand*{\SubTEq}{\gls{sym:subteq}}
+
+% Type promotion.
+\newglossaryentry{sym:promote}{
+    name={\ensuremath{\sqcup}},
+    description={Type promotion operator.},
+    sort={c promotion operator}
+}
+\newcommand*{\Promote}{\gls{sym:promote}}
+
+% Partial ordering relation.
+\newglossaryentry{LessT}{
+    name={partial ordering relation},
+    description={Defines a partial order over values of interpretable types.},
+    symbol={\ensuremath{\preceq}}
+}
+\newcommand*{\LessT}{\glssymbol{LessT}}
