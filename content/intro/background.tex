@@ -73,7 +73,7 @@ Evaluating an \term{operation} over \term{instances}[instance] it is not defined
 \section{Rounding}
 
 % Summary.
-\newterm{Rounding} is the process of representing an element of a set using its most accurate counterpart from another set.
+\newterm{Rounding}[rounding] is the process of representing an element of a set using its most accurate counterpart from another set.
 The semantics of \term{rounding} are thus contextual.
 Assuming the elements are partially ordered, such as number-like objects, we use \term{rounding functions}[rounding function] to disambiguate this.
 
@@ -307,20 +307,20 @@ This requirement is trivially fulfilled if the element type is \term{aligned}[al
 \end{equation*}
 which can be always be achieved by \term{padding}.
 
-\section{Binary Integers}
+\section{Binary Integer Numerals}
 
 % Summary.
-A \newterm{binary integer}[integer!binary] is a binary encoding of an integer value, i.e., a (typed) \term{bit sequence} that has an unambiguous interpretation as an integer.
+A \newterm{binary integer numeral}[integer!binary] is a binary encoding of an integer value, i.e., a (typed) \term{bit sequence} that has an unambiguous interpretation as an integer.
 For the purposes of \basetwo, we define a canonical encoding.
 
 \subsection{Unsigned}
 
 % Unsigned integers.
-\term{Unsigned integers}[integer!unsigned] of bit width \(n\) are commonly implemented to model the cyclic group \(\Int_{2^n}\).
+\term{Unsigned integer numerals}[integer!unsigned] of bit width \(n\) are commonly implemented to model the cyclic group \(\Int_{2^n}\).
 This also defines their expected operational semantics.
 
 \begin{definition}[Unsigned integer]
-    A \term{bit sequence} \(b \in \Buniv_n\) is interpreted as an \newterm{unsigned integer}[integer!unsigned] following the canonical bit order
+    A \term{bit sequence} \(b \in \Buniv_n\) is interpreted as an \newterm{unsigned integer numeral}[integer!unsigned] following the canonical bit order
     \begin{equation}
         \label{eq:uint}
         \tag{uint}
@@ -337,7 +337,7 @@ This also defines their expected operational semantics.
 \subsection{Signed}
 
 % Negative values.
-Encoding a negative value without a sign symbol requires a modified encoding.
+Without a symbol for the sign, a negative binary integer numeral requires a modified encoding.
 For example:
 
 \begin{tabularx}{\textwidth}{>{\bfseries}lX}
@@ -368,7 +368,7 @@ In particular
 \end{equation*}
 
 \begin{definition}[Signed integer]
-    A \term{bit sequence} \(b \in \Buniv_n\) is interpreted as a \newterm{signed integer}[integer!signed] following the canonical bit order and using the \newterm{two's complement} representation
+    A \term{bit sequence} \(b \in \Buniv_n\) is interpreted as a \newterm{signed integer numeral}[integer!signed] following the canonical bit order and using the \newterm{two's complement} representation
     \begin{equation}
         \label{eq:sint}
         \tag{sint}
@@ -388,7 +388,7 @@ In particular
 
 % Two's complement dominance.
 \begin{highlight}{Two's Complement Dominance}
-Virtually all systems with \term{binary integers}[integer!binary] in use today use the \term{two's complement} representation.
+Virtually all systems with \term{binary integer numerals}[integer!binary] in use today use the \term{two's complement} representation.
 This lead to the ISO C/C++ committe reaching a consensus about the use of \term{two's complement} in their programming languages.
 After previously only requiring \term{unsigned integers}[integer!unsigned] to model \(\Int_{2^n}\), C11 and C++20 now additionally require \term{two's complement}, und thus the same behavior, for \term{signed integers}[integer!signed].
 See \cite{ISO_C_N2218,ISO_C_P0907R4} for discussions on advantages and drawbacks.
@@ -397,18 +397,18 @@ See \cite{ISO_C_N2218,ISO_C_P0907R4} for discussions on advantages and drawbacks
 \subsection{Signless}
 
 % Signedness
-Since a \term{bit sequence} can be interpreted as either a \term{signed}[integer!signed] or \term{unsigned}[integer!unsigned] integer, a \term{binary integer}[integer!binary] must have an associated \newterm{signedness} to disambiguate.
+Since a \term{bit sequence} can be interpreted as either a \term{signed}[integer!signed] or \term{unsigned}[integer!unsigned] integer numeral, a \term{binary integer numeral}[integer!binary] must have an associated \newterm{signedness} to disambiguate.
 \Glspl{ir} like \LLVMIR use \newterm{signless integers}[integer!signless], which do not carry this information, and thus do not have an interpretation.
 
 \subsection{Truncation}
 
 % Truncation.
-A \term{binary integer}[integer!binary] \(z\) can be \term{truncated}[integer truncation] to a shorter bit width \(n\).
+A \term{binary integer numeral}[integer!binary] \(z\) can be \term{truncated}[integer truncation] to a shorter bit width \(n\).
 If \(z\) is unsigned, the result will be exact iff \(z < 2^n\), otherwise it will be exact iff \(2^{n-1} \le z < 2^{n}\).
 Otherwise, information is lost during truncation.
 
 \begin{definition}[Integer truncation]
-    A \term{binary integer}[integer!binary] \(z\) of bit width \(n\) is \term{truncated}[integer truncation] to \(z^\prime\) with bit width \(m \le n\) by removing the first \(n - m\) \glspl{msb} such that
+    A \term{binary integer numeral}[integer!binary] \(z\) of bit width \(n\) is \term{truncated}[integer truncation] to \(z^\prime\) with bit width \(m \le n\) by removing the first \(n - m\) \glspl{msb} such that
     \begin{equation*}
         \label{eq:trunc}
         \tag{trunc}
@@ -419,11 +419,11 @@ Otherwise, information is lost during truncation.
 \subsection{Extension}
 
 % Extension.
-A \term{binary integer}[integer!binary] can be appropriately \term{extended}[integer extension] to a longer bit width.
+A \term{binary integer numeral}[integer!binary] can be appropriately \term{extended}[integer extension] to a longer bit width.
 The result is always exact.
 
 \begin{definition}[Integer extension]
-    A \term{binary integer}[integer!binary] \(z\) of bit width \(n\) is \term{extended}[integer extension] to \(z^\prime\) with bit width \(m \ge n\) by prepending \(m - n\) \glspl{msb} such that
+    A \term{binary integer numeral}[integer!binary] \(z\) of bit width \(n\) is \term{extended}[integer extension] to \(z^\prime\) with bit width \(m \ge n\) by prepending \(m - n\) \glspl{msb} such that
     \begin{equation*}
         \label{eq:ext}
         \tag{ext}
@@ -438,12 +438,12 @@ The result is always exact.
 \subsection{Shifting}
 
 % Bit shifting.
-The digits of a \term{binary integer}[integer!binary] can be shifted towards the left or right.
+The digits of a \term{binary integer numeral}[integer!binary] can be shifted towards the left or right.
 Bits are inserted or discarded as needed.
 Shifting is the strength-reduced form of multiplication by powers of \(2\).
 
 \begin{definition}[Left shift]
-    The \newterm{left shift} of \term{binary integer}[integer!binary] \(z\) of bit width \(n\) by \(k \in \Nat\) places is given by
+    The \newterm{left shift} of \term{binary integer numeral}[integer!binary] \(z\) of bit width \(n\) by \(k \in \Nat\) places is given by
     \begin{equation*}
         \label{eq:shl}
         \tag{shl}
@@ -456,7 +456,7 @@ For an \term{unsigned integer}[integer!unsigned], the result of \term{left shift
 For a \term{signed integer}[integer!signed], the result of \term{left shifting}[left shift] by \(k\) will be exact iff \((\Sbit, \ldots, b_{k+1}) = (\Sbit)^{k+1}\).
 
 \begin{definition}[Right shift]
-    The \newterm{right shift} of \term{binary integer}[integer!binary] \(z\) of bit width \(n\) by \(k \in \Nat\) places is given by
+    The \newterm{right shift} of \term{binary integer numeral}[integer!binary] \(z\) of bit width \(n\) by \(k \in \Nat\) places is given by
     \begin{equation*}
         \label{eq:shr}
         \tag{shr}
@@ -467,7 +467,7 @@ For a \term{signed integer}[integer!signed], the result of \term{left shifting}[
 \subsection{Byte Order}
 
 % Introduction.
-Hardware implementations of \term{binary integers}[integer!binary] can internally arrange the digits in any order.
+Hardware implementations of \term{binary integer numerals}[integer!binary] can internally arrange the digits in any order.
 As long as the data stays on the system, the bit order inside the unit of \term{addressing granularity} is irrelevant.
 
 % Byte order.
@@ -489,40 +489,43 @@ The most common ones are:
 \section{Binary Rationals}
 
 % Summary.
-Encoding a rational value in binary without a separator symbol requires a specialized encoding.
-This can be achieved by using a pair of integer values to represent the rational value.
+A \newterm{binary rational numeral}[rational!binary] is a positional encoding of a rational number.
+Without a symbol for the radix point, they model the rational numbers using a pair of integers \((z, E)\) such that
+\begin{equation*}
+    \Rat = \{z \cdot 2^E : z, E \in \Int\}
+\end{equation*}
+where \(z\) is the \newterm{significand} and \(E\) is the \newterm{binary exponent}.
 
-\begin{definition}[Binary rational number]
-    The \newterm{binary rational numbers}[number!binary rational] model the rational numbers using an integer \newterm{significand} \(z\) and \newterm{binary exponent} \(E\).
-    \begin{equation*}
-        \Rat = \{z \cdot 2^E : z, E \in \Int\}
-    \end{equation*}
-\end{definition}
+\begin{highlight}{Binary Exponent Form}
+    In C and related languages, hexadecimal floating-point literals are supported.
+    These encode \(z\) in hexadecimal and \(E\) in decimal format, separating them using \texttt{p} or \texttt{P}.
+    For example, \(\pi\) can be serialized in binary64 (double) as \texttt{3.141593e+00} or \texttt{0x1.921fb54442d18p+1}.
+\end{highlight}
 
 \subsection{Fixed-point}
 
 % Fixed-point.
 In cases where the \term{binary exponent} can be inferred from the context, it may be omitted.
-For \(E=0\), the binary \term{binary fixed-point numbers}[number!binary fixed-point] are equivalent to the \term{binary integers}[integer!binary].
+For \(E=0\), the binary \term{binary fixed-point numerals}[rational!binary fixed-point] are equivalent to the \term{binary integer numerals}[integer!binary].
 
-\begin{definition}[Binary fixed-point number]
-    A \newterm{binary fixed-point number}[number!binary fixed-point] is a \term{binary rational number}[number!binary rational] with an implied exponent \(E\).
+\begin{definition}[Binary fixed-point]
+    A \newterm{binary fixed-point numeral}[rational!binary fixed-point] is a \term{binary rational numeral}[rational!binary] with an implied exponent \(E\).
 \end{definition}
 
 \subsection{Floating-point}
 
 % Floating-point.
-Encoding the \term{binary exponent} explicitly increases the value range at the cost of accuracy.
+Encoding the \term{binary exponent} explicitly increases the value range compared to \term{binary fixed-point numerals}[rational!binary fixed-point] at the cost of additional bit width.
 
-\begin{definition}[Binary floating-point number]
-    A \newterm{binary floating-point number}[number!binary floating-point] is a \term{binary rational number}[number!binary rational] with an explicit, variable exponent \(E\).
-    Implementations may also represent non-rational values.
+\begin{definition}[Binary floating-point]
+    A \newterm{binary floating-point numeral}[rational!binary floating-point] is a \term{binary rational numeral}[rational!binary] with an explicit, variable exponent \(E\).
 \end{definition}
 
 \subsection{Non-finite}
+\label{sec:non_finite}
 
 % Non-rational values.
-\term{Binary floating-point}[number!binary floating-point] implementations such as IEEE-754 \cite{IEEE_754} also represent non-finite values.
+\term{Binary floating-point}[rational!binary floating-point] implementations such as IEEE-754 \cite{IEEE_754} also represent non-finite values.
 A non-finite value is not in \Rat{}, and not necessarily ordered with other values.
 
 % Infinity.
